@@ -21,7 +21,7 @@ end
 loop do
   w.times do |y|
     w.times do |x|
-      a = dango_alpha(x, y, 7.5, 7.5, 2.2)
+      a = dango_alpha(x, y, 7.5, 7.5, 2.1)
       p a
       rgb = rgba(0x80, 0xB0, 0x20, a)
       led.set_rgb(y*w + x, *rgb)
