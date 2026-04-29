@@ -3,7 +3,7 @@ require 'ws2812-plus'
 led = WS2812.new(pin: Board43::GPIO_LEDOUT, num: 256)
 
 w = 16
-frame_interval = 10 # ms
+frame_interval = 50 # ms
 
 def dango_alpha(x, y, cx, cy, r)
   d = Math::sqrt((x - cx)**2 + (y - cy)**2)
@@ -58,6 +58,11 @@ loop do
       end
     end
     led.show
-    sleep_ms frame_interval
+    case f
+    when 2
+      sleep_ms(frame_interval * 10)
+    else
+      sleep_ms(frame_interval)
+    end
   end
 end
