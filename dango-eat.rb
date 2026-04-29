@@ -3,7 +3,7 @@ require 'ws2812-plus'
 led = WS2812.new(pin: Board43::GPIO_LEDOUT, num: 256)
 
 w = 16
-frame_interval = 100 # ms
+frame_interval = 10 # ms
 
 def dango_alpha(x, y, cx, cy, r)
   d = Math::sqrt((x - cx)**2 + (y - cy)**2)
@@ -33,19 +33,31 @@ d_radius = 3.5
 s_rgb = [0x30, 0x10, 0x10]
 s_width = 1.5
 
-w.times do |y|
-  w.times do |x|
-    rgb = [0, 0, 0]
-    if dango_alpha(x, y, 12, 12, d_radius) * eat(x, y, 14, 14, d_radius) > 0
-      rgb = d_rgb
-    elsif dango_alpha(x, y, 8, 8, d_radius) > 0
-      rgb = d_rgb
-    elsif dango_alpha(x, y, 4, 4, d_radius) > 0
-      rgb = d_rgb
-    elsif stick_alpha(x, y, 3, 3, w-4, w-4, s_width) > 0
-      rgb = s_rgb
+loop do
+  10.times do |f|
+    w.times do |y|
+      w.times do |x|
+        rgb = [0, 0, 0]
+        top = dango_alpha(x, y, 12, 12, d_radius)
+        case f
+        when 1
+          top *= eat(x, y, 14, 15, d_radius)
+        when 2
+          top *= eat(x, y, 12, 12, d_radius)
+        end
+        if top > 0
+          rgb = d_rgb
+        elsif dango_alpha(x, y, 8, 8, d_radius) > 0
+          rgb = d_rgb
+        elsif dango_alpha(x, y, 4, 4, d_radius) > 0
+          rgb = d_rgb
+        elsif stick_alpha(x, y, 3, 3, w-4, w-4, s_width) > 0
+          rgb = s_rgb
+        end
+        led.set_rgb(y*w + x, *rgb)
+      end
     end
-    led.set_rgb(y*w + x, *rgb)
+    led.show
+    sleep_ms frame_interval
   end
 end
-led.show
