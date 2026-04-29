@@ -14,6 +14,10 @@ def dango_alpha(x, y, cx, cy, r)
   end
 end
 
+def eat(x, y, cx, cy, r)
+  return 1 - dango_alpha(x, y, cx, cy, r)
+end
+
 def stick_alpha(x, y, x1, y1, x2, y2, w)
   d = ((y2 - y1)*x - (x2 - x1)*y + x2*y1 - y2*x1)/Math::sqrt((y2-y1)**2 + (x2-x1)**2)
   d = -d if d < 0
@@ -32,7 +36,7 @@ s_width = 1.5
 w.times do |y|
   w.times do |x|
     rgb = [0, 0, 0]
-    if dango_alpha(x, y, 12, 12, d_radius) > 0
+    if dango_alpha(x, y, 12, 12, d_radius) * eat(x, y, 14, 14, d_radius) > 0
       rgb = d_rgb
     elsif dango_alpha(x, y, 8, 8, d_radius) > 0
       rgb = d_rgb
