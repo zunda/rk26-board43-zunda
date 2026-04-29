@@ -25,18 +25,20 @@ def stick_alpha(x, y, x1, y1, x2, y2, w)
 end
 
 d_rgb = [0x80, 0xB0, 0x20]
+d_radius = 3.5
 s_rgb = [0x30, 0x10, 0x10]
+s_width = 1.5
 
 w.times do |y|
   w.times do |x|
     rgb = [0, 0, 0]
-    if dango_alpha(x, y, 12, 12, 3.5) > 0
+    if dango_alpha(x, y, 12, 12, d_radius) > 0
       rgb = d_rgb
-    elsif dango_alpha(x, y, 8, 8, 3.5) > 0
+    elsif dango_alpha(x, y, 8, 8, d_radius) > 0
       rgb = d_rgb
-    elsif dango_alpha(x, y, 4, 4, 3.5) > 0
+    elsif dango_alpha(x, y, 4, 4, d_radius) > 0
       rgb = d_rgb
-    elsif stick_alpha(x, y, 3, 3, w-4, w-4, 1.5) > 0
+    elsif stick_alpha(x, y, 3, 3, w-4, w-4, s_width) > 0
       rgb = s_rgb
     end
     led.set_rgb(y*w + x, *rgb)
