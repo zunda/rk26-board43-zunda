@@ -1,0 +1,1 @@
+A [PicoRuby](https://picoruby.org) program to show green dango being eaten on a [Board43](https://github.com/smartbank-inc/Board43/). The code can be copy-pasted and uploaded to your board via https://board43-playground.smartbank.workers.dev/ on Chrome.
