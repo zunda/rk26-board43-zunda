@@ -30,7 +30,11 @@ s_rgb = [0x30, 0x10, 0x10]
 w.times do |y|
   w.times do |x|
     rgb = [0, 0, 0]
-    if dango_alpha(x, y, 7.5, 7.5, 3) > 0
+    if dango_alpha(x, y, 12, 12, 3.5) > 0
+      rgb = d_rgb
+    elsif dango_alpha(x, y, 8, 8, 3.5) > 0
+      rgb = d_rgb
+    elsif dango_alpha(x, y, 4, 4, 3.5) > 0
       rgb = d_rgb
     elsif stick_alpha(x, y, 3, 3, w-4, w-4, 1.5) > 0
       rgb = s_rgb
@@ -39,4 +43,3 @@ w.times do |y|
   end
 end
 led.show
-
