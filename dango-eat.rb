@@ -1,9 +1,8 @@
-# Set up the LED matrix
 require 'ws2812-plus'
 led = WS2812.new(pin: Board43::GPIO_LEDOUT, num: 256)
 
 w = 16
-frame_interval = 50 # ms
+pause = 500 # ms
 
 def dango_alpha(x, y, cx, cy, r)
   d = Math::sqrt((x - cx)**2 + (y - cy)**2)
@@ -37,8 +36,13 @@ loop do
   10.times do |f|
     w.times do |y|
       w.times do |x|
+        shift = 0
+        case f
+        when 3..6
+          shift = f - 7
+        end
         rgb = [0, 0, 0]
-        top = dango_alpha(x, y, 12, 12, d_radius)
+        top = dango_alpha(x, y, 12 + shift, 12 + shift, d_radius)
         case f
         when 1
           top *= eat(x, y, 14, 15, d_radius)
@@ -47,9 +51,9 @@ loop do
         end
         if top > 0
           rgb = d_rgb
-        elsif dango_alpha(x, y, 8, 8, d_radius) > 0
+        elsif dango_alpha(x, y, 8 + shift, 8 + shift, d_radius) > 0
           rgb = d_rgb
-        elsif dango_alpha(x, y, 4, 4, d_radius) > 0
+        elsif dango_alpha(x, y, 4 + shift, 4 + shift, d_radius) > 0
           rgb = d_rgb
         elsif stick_alpha(x, y, 3, 3, w-4, w-4, s_width) > 0
           rgb = s_rgb
@@ -60,9 +64,9 @@ loop do
     led.show
     case f
     when 2
-      sleep_ms(frame_interval * 10)
-    else
-      sleep_ms(frame_interval)
+      sleep_ms pause
+    when 7
+      sleep_ms pause*10
     end
   end
 end
