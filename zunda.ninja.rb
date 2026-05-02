@@ -146,15 +146,28 @@ end
 require 'ws2812-plus'
 led = WS2812.new(pin: Board43::GPIO_LEDOUT, num: 256)
 
+require 'i2c'
+require 'lsm6ds3'
+i2c = I2C.new(unit: :RP2040_I2C0, sda_pin: Board43::GPIO_IMU_SDA, scl_pin: Board43::GPIO_IMU_SCL, frequency: 400_000)
+imu = LSM6DS3.new(i2c)
+th = 0.75
+
 w = 16
 
 # colors and geometries
-u_rgb = [0xD8, 0xE0, 0xA0]
+u_rgb = [0xD0, 0xF0, 0x30]
 
 # main loop
 sy = -8
+gravity = [0, 1]
 loop do
   (-w..(bitmap_w + 1)).each do |sx|
+    acc = imu.read_acceleration
+    if acc[0] < -th
+      gravity = [0, -1]
+    elsif th < acc[0]
+      gravity = [0, 1]
+    end
     w.times do |y|
       by = sy + y
       w.times do |x|
@@ -163,7 +176,14 @@ loop do
         if 0 <= bx and bx < bitmap_w and 0 <= by and by < bitmap_h
           rgb = u_rgb if bitmap[by][bx]
         end
-        led.set_rgb(y*w + x, *rgb)
+        if gravity[1] < 0
+          dx = w - 1 - x
+          dy = w - 1 - y
+        else
+          dx = x
+          dy = y
+        end
+        led.set_rgb(dy*w + dx, *rgb)
       end
     end
     led.show
