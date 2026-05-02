@@ -1,6 +1,7 @@
-bitmap = Hash.new
+font = Hash.new
+font_h = 5
 
-bitmap["h"] = <<_
+font["h"] = <<_
 +..
 +..
 +++
@@ -8,7 +9,7 @@ bitmap["h"] = <<_
 +.+
 _
 
-bitmap["t"] = <<_
+font["t"] = <<_
 .+.
 +++
 .+.
@@ -16,7 +17,7 @@ bitmap["t"] = <<_
 .++
 _
 
-bitmap["p"] = <<_
+font["p"] = <<_
 ...
 +++
 +.+
@@ -24,7 +25,7 @@ bitmap["p"] = <<_
 +..
 _
 
-bitmap["s"] = <<_
+font["s"] = <<_
 ...
 +++
 ++.
@@ -32,7 +33,7 @@ bitmap["s"] = <<_
 +++
 _
 
-bitmap[":"] = <<_
+font[":"] = <<_
 .
 +
 .
@@ -40,7 +41,7 @@ bitmap[":"] = <<_
 .
 _
 
-bitmap["/"] = <<_
+font["/"] = <<_
 ...
 ..+
 .+.
@@ -48,7 +49,7 @@ bitmap["/"] = <<_
 ...
 _
 
-bitmap["z"] = <<_
+font["z"] = <<_
 ...
 +++
 .+.
@@ -56,7 +57,7 @@ bitmap["z"] = <<_
 +++
 _
 
-bitmap["u"] = <<_
+font["u"] = <<_
 ...
 +.+
 +.+
@@ -64,7 +65,7 @@ bitmap["u"] = <<_
 .++
 _
 
-bitmap["n"] = <<_
+font["n"] = <<_
 ...
 +++
 +.+
@@ -72,7 +73,7 @@ bitmap["n"] = <<_
 +.+
 _
 
-bitmap["d"] = <<_
+font["d"] = <<_
 ..+
 ..+
 +++
@@ -80,7 +81,7 @@ bitmap["d"] = <<_
 +++
 _
 
-bitmap["a"] = <<_
+font["a"] = <<_
 ...
 .+.
 +.+
@@ -88,7 +89,7 @@ bitmap["a"] = <<_
 +.+
 _
 
-bitmap["i"] = <<_
+font["i"] = <<_
 +
 .
 +
@@ -96,7 +97,7 @@ bitmap["i"] = <<_
 +
 _
 
-bitmap["."] = <<_
+font["."] = <<_
 .
 .
 .
@@ -104,7 +105,7 @@ bitmap["."] = <<_
 +
 _
 
-bitmap["j"] = <<_
+font["j"] = <<_
 .+
 ..
 .+
@@ -112,7 +113,7 @@ bitmap["j"] = <<_
 ++
 _
 
-bitmap[" "] = <<_
+font[" "] = <<_
 .
 .
 .
@@ -120,9 +121,51 @@ bitmap[" "] = <<_
 .
 _
 
-b =  "ht t p s : // z u n d a . n i n j a".chars.
-  map{|c| bitmap[c].split(/\n/)}.
-  transpose.
-  map{|l| l.join("")}.
-  map{|l| l.chars.map{|c| c == "+" ? "##" : "  "}.join}
-puts b
+# Array#transpose and Array#flatten are not on PicoRuby
+t =  "ht t p s : // z u n d a . n i n j a".chars.
+  map{|c| font[c].split("\n").map{|l| l.chars.map{|p| p == "+" ? true : false}}}
+bitmap_w = 0
+t.map{|c| c.first}.each do |l|
+  bitmap_w += l.size
+end
+bitmap_h = font_h
+bitmap = Array.new(bitmap_h)
+bitmap_h.times do |y|
+  u = Array.new
+  t.map{|c| c[y]}.each do |a|
+    a.each do |v|
+      u << v
+    end
+  end
+  bitmap[y] = Array.new
+  bitmap_w.times do |x|
+    bitmap[y][x] = u[x]
+  end
+end
+
+require 'ws2812-plus'
+led = WS2812.new(pin: Board43::GPIO_LEDOUT, num: 256)
+
+w = 16
+
+# colors and geometries
+u_rgb = [0xD8, 0xE0, 0xA0]
+
+# main loop
+sy = -8
+loop do
+  (-w..(bitmap_w + 1)).each do |sx|
+    w.times do |y|
+      by = sy + y
+      w.times do |x|
+        rgb = [0, 0, 0]
+        bx = sx + x
+        if 0 <= bx and bx < bitmap_w and 0 <= by and by < bitmap_h
+          rgb = u_rgb if bitmap[by][bx]
+        end
+        led.set_rgb(y*w + x, *rgb)
+      end
+    end
+    led.show
+  end
+end
