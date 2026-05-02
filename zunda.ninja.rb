@@ -150,7 +150,7 @@ require 'i2c'
 require 'lsm6ds3'
 i2c = I2C.new(unit: :RP2040_I2C0, sda_pin: Board43::GPIO_IMU_SDA, scl_pin: Board43::GPIO_IMU_SCL, frequency: 400_000)
 imu = LSM6DS3.new(i2c)
-th = 0.75
+th = 0.25
 
 w = 16
 
@@ -167,6 +167,10 @@ loop do
       gravity = [0, -1]
     elsif th < acc[0]
       gravity = [0, 1]
+    elsif acc[1] < -th
+      gravity = [-1, 0]
+    elsif th < acc[1]
+      gravity = [1, 0]
     end
     w.times do |y|
       by = sy + y
@@ -176,12 +180,25 @@ loop do
         if 0 <= bx and bx < bitmap_w and 0 <= by and by < bitmap_h
           rgb = u_rgb if bitmap[by][bx]
         end
-        if gravity[1] < 0
+        case gravity[1]
+        when -1
           dx = w - 1 - x
           dy = w - 1 - y
-        else
+        when 1
           dx = x
           dy = y
+        else
+          case gravity[0]
+          when -1
+            dy = x
+            dx = w - 1 - y
+          when 1
+            dy = w - 1 - x
+            dx = y
+          else
+            dx = x
+            dy = y
+          end
         end
         led.set_rgb(dy*w + dx, *rgb)
       end
