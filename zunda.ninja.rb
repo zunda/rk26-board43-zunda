@@ -150,7 +150,7 @@ require 'i2c'
 require 'lsm6ds3'
 i2c = I2C.new(unit: :RP2040_I2C0, sda_pin: Board43::GPIO_IMU_SDA, scl_pin: Board43::GPIO_IMU_SCL, frequency: 400_000)
 imu = LSM6DS3.new(i2c)
-th = 0.25
+th = 0.5
 
 w = 16
 
@@ -163,14 +163,18 @@ gravity = [0, 1]
 loop do
   (-w..(bitmap_w + 1)).each do |sx|
     acc = imu.read_acceleration
-    if acc[0] < -th
-      gravity = [0, -1]
-    elsif th < acc[0]
-      gravity = [0, 1]
-    elsif acc[1] < -th
-      gravity = [-1, 0]
-    elsif th < acc[1]
-      gravity = [1, 0]
+    if acc[0]*acc[0] > acc[1]*acc[1]
+      if acc[0] < -th
+        gravity = [0, -1]
+      elsif th < acc[0]
+        gravity = [0, 1]
+      end
+    else
+      if acc[1] < -th
+        gravity = [-1, 0]
+      elsif th < acc[1]
+        gravity = [1, 0]
+      end
     end
     w.times do |y|
       by = sy + y
